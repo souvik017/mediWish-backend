@@ -8,20 +8,21 @@ module.exports.setupRideSocketHandlers = (io, db) => {
     console.log(`Ride socket connected: ${socket.id}`);
 
     // ------------------- REGISTER DRIVER -------------------
-    socket.on("registerDriver", async (data) => {
-      const { driverId } = data;
-      if (!driverId) return socket.emit("error", "Driver ID required");
-      try {
-        await db.query(
-          "UPDATE warriors SET socket_id = ? WHERE id = ? AND status = 'active'",
-          [socket.id, driverId]
-        );
-        socket.emit("driverRegistered", { success: true });
-      } catch (err) {
-        console.error(err);
-        socket.emit("error", "Database error");
-      }
-    });
+   socket.on("registerDriver", async (data) => {
+  const { driverId } = data;
+  if (!driverId) return socket.emit("error", "Driver ID required");
+  try {
+    await db.query(
+      "UPDATE warriors SET socket_id = ? WHERE id = ?",
+      [socket.id, driverId]
+    );
+    console.log(`✅ Driver ${driverId} registered with socket ${socket.id}`);
+    socket.emit("driverRegistered", { success: true });
+  } catch (err) {
+    console.error(err);
+    socket.emit("error", "Database error");
+  }
+});
 
     // ------------------- UPDATE DRIVER LOCATION -------------------
     socket.on("updateDriverLocation", async (data) => {
