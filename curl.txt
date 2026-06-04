@@ -1,0 +1,37 @@
+# Find drivers
+GET /ride/find-drivers?lat=40.7128&lng=-74.0060&radius=3000
+
+# Book ride
+POST /ride/book
+{
+  "userId": "user123",
+  "pickupLocation": { "lat": 40.7128, "lng": -74.0060 },
+  "dropoffLocation": { "lat": 40.7580, "lng": -73.9855 },
+  "paymentMethod": "card",
+  "patientInfo": { "condition": "fever" }
+}
+
+# Accept ride (driver)
+PUT /ride/accept/ride_abc123
+{
+  "driverId": "driver456"
+}
+
+# Verify OTP
+POST /ride/verify-otp
+{
+  "rideId": "ride_abc123",
+  "otp": "123456",
+  "role": "user"
+}
+
+# Get tracking
+GET /ride/tracking/ride_abc123
+
+# Start ride (driver)
+POST /ride/start/ride_abc123
+{ "driverId": "driver456" }
+
+# Complete ride
+POST /ride/complete/ride_abc123
+{ "driverId": "driver456" }

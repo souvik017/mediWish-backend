@@ -26,7 +26,7 @@ function generateAgoraToken(channelName, uid = 0, role = RtcRole.PUBLISHER) {
 }
 
 // ---------- User's Expo push token (replace with actual token) ----------
-const USER_EXPO_TOKEN = "ExponentPushToken[XLTyhHDQzd9UkzHV8LsZdm]";
+const USER_EXPO_TOKEN = "ExponentPushToken[ayLoAkKI-_Zyq3zzFZCoBa]";
 
 // ---------- Simulate a doctor initiating a call ----------
 async function doctorInitiatesCall(doctorId, doctorName, patientExpoToken, channelName, callType = "video") {
