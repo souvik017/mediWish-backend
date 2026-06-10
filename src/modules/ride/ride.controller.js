@@ -318,33 +318,88 @@ exports.acceptRide = async (req, res) => {
 exports.verifyOtp = async (req, res) => {
   try {
     const { rideId, otp } = req.body;
+    
+    // Debug logging
+    console.log('[verifyOtp] Input received:', { rideId, otp, otpType: typeof otp });
+    
+    if (!rideId || !otp) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Ride ID and OTP are required' 
+      });
+    }
+    
     const [rides] = await db.query(`SELECT * FROM rides WHERE id = ?`, [rideId]);
+    
     if (rides.length === 0) {
       return res.status(404).json({ success: false, message: 'Ride not found' });
     }
+    
     const ride = rides[0];
+    
+    // Debug logging
+    console.log('[verifyOtp] Ride data:', { 
+      id: ride.id, 
+      status: ride.status, 
+      storedOtp: ride.otp, 
+      storedOtpType: typeof ride.otp,
+      otpVerified: ride.otp_verified
+    });
+    
     if (ride.status !== 'accepted') {
-      return res.status(400).json({ success: false, message: `Ride cannot be started (status: ${ride.status})` });
+      return res.status(400).json({ 
+        success: false, 
+        message: `Ride cannot be started (status: ${ride.status})` 
+      });
     }
-    if (ride.otp !== otp) {
-      return res.status(401).json({ success: false, message: 'Invalid OTP' });
+    
+    // Convert both to strings for comparison (handles number vs string)
+    const storedOtp = String(ride.otp).trim();
+    const providedOtp = String(otp).trim();
+    
+    console.log('[verifyOtp] Comparing:', { 
+      storedOtp, 
+      providedOtp,
+      match: storedOtp === providedOtp 
+    });
+    
+    if (storedOtp !== providedOtp) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid OTP' 
+      });
     }
 
     await db.query(
       `UPDATE rides SET otp_verified = TRUE, status = 'in-progress', updated_at = NOW() WHERE id = ?`,
       [rideId]
     );
+    
+    console.log('[verifyOtp] OTP verified successfully for ride:', rideId);
 
     const io = req.app.get('io');
     if (io) {
       const [user] = await db.query(`SELECT socket_id FROM users WHERE id = ?`, [ride.user_id]);
       const [driver] = await db.query(`SELECT socket_id FROM warriors WHERE id = ?`, [ride.driver_id]);
-      if (user[0]?.socket_id) io.to(user[0].socket_id).emit('otpVerified', { rideId });
-      if (driver[0]?.socket_id) io.to(driver[0].socket_id).emit('otpVerified', { rideId });
+      
+      if (user[0]?.socket_id) {
+        io.to(user[0].socket_id).emit('otpVerified', { rideId, status: 'in-progress' });
+        console.log('[verifyOtp] Emitted to user:', user[0].socket_id);
+      }
+      if (driver[0]?.socket_id) {
+        io.to(driver[0].socket_id).emit('otpVerified', { rideId, status: 'in-progress' });
+        console.log('[verifyOtp] Emitted to driver:', driver[0].socket_id);
+      }
     }
 
-    res.json({ success: true, message: 'OTP verified. Ride can now start.', rideId, status: 'in-progress' });
+    res.json({ 
+      success: true, 
+      message: 'OTP verified. Ride can now start.', 
+      rideId, 
+      status: 'in-progress' 
+    });
   } catch (error) {
+    console.error('[verifyOtp] Error:', error);
     logger.error('verifyOtp error', error);
     res.status(500).json({ success: false, message: error.message });
   }
