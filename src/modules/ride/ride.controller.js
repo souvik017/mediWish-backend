@@ -540,6 +540,9 @@ exports.cancelRideWithoutId = async (req, res) => {
 // --------------------------------------------------------------
 // 8b. Cancel ride WITH rideId (for accepted/in-progress rides)
 // --------------------------------------------------------------
+// --------------------------------------------------------------
+// 8b. Cancel ride WITH rideId (for accepted/in-progress rides)
+// --------------------------------------------------------------
 exports.cancelRideWithId = async (req, res) => {
   const connection = await db.getConnection();
   
@@ -595,10 +598,10 @@ exports.cancelRideWithId = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cannot cancel ride after pickup' });
     }
     
-    // Cancel the ride
+    // Cancel the ride - without cancelled_at column
     await connection.query(
-      `UPDATE rides SET status = 'cancelled', cancelled_at = NOW(), cancellation_reason = ?, updated_at = NOW() WHERE id = ?`,
-      [reason, rideId]
+      `UPDATE rides SET status = 'cancelled', updated_at = NOW() WHERE id = ?`,
+      [rideId]
     );
     
     // Make driver available again if assigned
