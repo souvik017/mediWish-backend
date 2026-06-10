@@ -7,8 +7,8 @@ router.post('/book', rideController.bookRide);
 router.get('/details/:rideId?', rideController.getRideDetails);
 router.get('/history/:userId', rideController.getUserRideHistory);
 router.put('/accept/:rideId', rideController.acceptRide);
-router.delete('/cancel', rideController.cancelRide);  // For cancelling without rideId (searching state)
-router.post('/cancel/:rideId?', rideController.cancelRide);  // For cancelling with or without rideIdrouter.post('/verify-otp', rideController.verifyOtp);
+router.delete('/cancel', rideController.cancelRideWithoutId);  // For cancelling without rideId (searching state)
+router.post('/cancel/:rideId?', rideController.cancelRideWithId);  // For cancelling with or without rideIdrouter.post('/verify-otp', rideController.verifyOtp);
 router.get('/tracking/:rideId', rideController.getTracking);
 router.post('/start/:rideId', rideController.startRide);
 router.post('/complete/:rideId', rideController.completeRide);
